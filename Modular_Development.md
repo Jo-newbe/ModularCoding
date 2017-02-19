@@ -90,3 +90,130 @@ var module = (function() {
 因为有了模块，开发者可以更加方便的使用别人已完成的模块。大大的提高了开发效率。但是想想，如果定义模块没有统一的规范，每个人想怎么写就怎么写，那么加载别人的模块，就很有可能因为规范问题，导致无法使用他人的模块。那岂不是失去了模块的意义了吗！因此制定模块的编写规范是必要的。
 
 目前，JavaScript模块规范有三种：CommonJS、AMD（Asynchronous Module Definition）和CMD（Common Module Definition）。
+
+## CommonJS
+
+CommonJS是为了JS的表现而制定的规范，由于早期JS没有模块的功能，因此CommonJS应运而生。但是其强大的地方是，CommonJS希望JavaScript可以在任何地方执行，不仅仅是在浏览器上。
+
+### 概述
+
+目前非常流行的项目NodeJS就是CommonJS规范的一种实现。
+
+根据CommonJS规范，一个单独的文件就是一个模块，有自己的作用域。在一个文件里边定义的变量、函数、类都是私有的，对其他文件是不可见的。
+
+```javascript
+	// mod1.js
+  var n = 1;
+  var add = function(val) {
+  	return val + n;
+  };
+```
+
+在上面代码中，变量n 以及 函数add 是mod1.js文件私有，对其他文件是不可见的。
+如果想在多文件中共享变量，可以使用global对象
+
+```javascript
+	global.share = 'this is a share data';
+```
+
+上面代码中，share变量就是共享的，可以被所有文件读取，但是这种做法并不推荐。
+
+CommonJS规范规定，每个模块内部，module变量表示当前模块。该变量是一个对象，其exports属性（即module.exports）是对外的接口。在加载某个模块时，本质就是加载该模块module.exports属性。
+
+```javascript
+	var n = 1;
+	var add = function(val) {
+		return val + n;
+	};
+
+	module.exports.n = n;
+	module.exports.add = add;
+```
+
+上述代码，通过module.exports输出变量n 以及 函数add。
+
+require()方法用于加载指定模块。
+
+```javascript
+	var mod = require('./mod.js');
+	console.log(mod.n); // 1
+	console.log(mod.add(1)); // 2
+```
+
+CommonJS模块的特点如下：
+	* 所有代码都运行在模块的作用域下，不会污染全局作用域（全局变量以及全局对象）
+	* 模块可以多次健在加载，但只会在第一次加载时运行一次，然后将运行后的结果缓存起来，以后再加载就直接读取缓存结果，想要模块再次运行，必须清楚缓存。
+	* 模块加载顺序，是按照其在代码中出现的顺序。
+
+### module对象
+
+NodeJS内部提供一个Module构建函数，所有模块都是Module的实例。
+
+```javascript
+	function Module(id, parent) {
+		this.id = id;
+		this.exports = {};
+		this.parent = parent;
+		// some thing else
+	}
+```
+
+每一个模块内部都有一个module对象，代表当前模块。具有以下属性
+	* module.id 模块的标识符，通常是带有绝对路径的模块文件名。
+	* module.filename 模块的文件名，带有绝对路径。
+	* module.loaded 返回一个bool值，表示该模块是否已加载完成。
+	* module.parent 返回一个对象，表示调用该模块的模块。
+	* module.children 返回一个数组，表示该模块要用到的其他模块。 
+	* module.exports 表示模块对外输出的值。
+
+```javascript
+	// mod2.js
+	var jQuery = require('jquery');
+	exports.$ = jQuery;
+	console.log(module);
+```
+上述代码，在命令行输入结果如下：
+
+```javascript
+	{ id: '.',
+	  exports: { '$': [Function] },
+	  parent: null,
+	  filename: '/example.js',
+	  loaded: false,
+	  children:
+	    [ { id: '/node_modules/jquery/dist/jquery.js',
+	       exports: [Function],
+	       parent: [Circular],
+	       filename: '/node_modules/jquery/dist/jquery.js',
+	       loaded: true,
+	       children: [],
+	       paths: [Object] 
+	    } ],
+	  paths: ['/node_modules' ]
+	}
+```
+
+#### module.exports属性
+
+module.exports属性表示当前模块对外输入的接口，其他文件（模块）加载该模块，实际上就是读取module.exports变量。
+
+#### exports变量
+
+为了方便，NodeJS为每个模块提供一个exports变量，指向module.exports。这就等同于在每个模块头部，有一行这样的代码。
+
+```javascript
+	var exports = module.exports;
+```
+
+造成的结果就是，在对外输出模块接口时，可以向exports对象添加方法。
+
+```javascript
+	exports.area = function(r) {
+		return Math.PI * r * r;
+	};
+	exports.circumference = function(r) {
+		return 2 * Math.PI * r;
+	};
+```
+
+注意：不要直接给exports赋值，这样做会切断exports与module.exports之间的关联。
