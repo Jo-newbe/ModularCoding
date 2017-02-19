@@ -1,0 +1,242 @@
+<html>
+  <head>
+	  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>itheima:Modular_Development</title>
+		<link href="toc/style/github-bf51422f4bb36427d391e4b75a1daa083c2d840e.css" media="all" rel="stylesheet" type="text/css"/>
+		<link href="toc/style/github2-d731afd4f624c99a4b19ad69f3083cd6d02b81d5.css" media="all" rel="stylesheet" type="text/css"/>
+		<link href="toc/css/zTreeStyle/zTreeStyle.css" media="all" rel="stylesheet" type="text/css"/>
+	  <style>
+		pre {
+		    counter-reset: line-numbering;
+		    border: solid 1px #d9d9d9;
+		    border-radius: 0;
+		    background: #fff;
+		    padding: 0;
+		    line-height: 23px;
+		    margin-bottom: 30px;
+		    white-space: pre;
+		    overflow-x: auto;
+		    word-break: inherit;
+		    word-wrap: inherit;
+		}
+
+		pre a::before {
+		  content: counter(line-numbering);
+		  counter-increment: line-numbering;
+		  padding-right: 1em; /* space after numbers */
+		  width: 25px;
+		  text-align: right;
+		  opacity: 0.7;
+		  display: inline-block;
+		  color: #aaa;
+		  background: #eee;
+		  margin-right: 16px;
+		  padding: 2px 10px;
+		  font-size: 13px;
+		  -webkit-touch-callout: none;
+		  -webkit-user-select: none;
+		  -khtml-user-select: none;
+		  -moz-user-select: none;
+		  -ms-user-select: none;
+		  user-select: none;
+		}
+
+		pre a:first-of-type::before {
+		  padding-top: 10px;
+		}
+
+		pre a:last-of-type::before {
+		  padding-bottom: 10px;
+		}
+
+		pre a:only-of-type::before {
+		  padding: 10px;
+		}
+
+		.highlight { background-color: #ffffcc } /* RIGHT */
+		</style>
+  </head>
+  <body>
+	  <div>
+				<div style='width:25%;'>
+						<ul id="tree" class="ztree" style='width:100%'>
+
+						</ul>
+				</div>
+        <div id='readme' style='width:70%;margin-left:20%;'>
+          	<article class='markdown-body'>
+            	<h1 id="javascript-">JavaScript模块化编程</h1>
+<p>随着前端技术的发展，多数网站逐渐演变成“互联网应用程序”（Internet Applications），同时要求前端处理复杂的逻辑以及完成更多的功能，从而导致嵌入在HTML页面上的JavaScript代码就越来越多，越来越复杂了。</p>
+<p>前端项目也更像是传统后台应用程序一样，需要多人协同开发、项目控制、单元测试等。因此JavaScript模块化开发成为一个迫切
+的需求。开发者只需关注自己的核心业务功能，其他的可以加载别人已经开发好的模块即可。</p>
+<p>但是很不幸，JS并不是一种支持模块化编程的语言，因为在JS中不支持“类class”，当然更谈不上支持“模块module”了。可喜的是在ES6中，将支持“类” 和 “模块”，只不过还需要等上一段时间呢。</p>
+<p>经过多年的努力，JavaScript已实现在现有的环境下，实现模块化的效果。</p>
+<h2 id="-">原始写法</h2>
+<p>刚诞生模块化编程时，模块的定义是 实现特定功能的一组函数（方法）。</p>
+<pre><code class="lang-javascript">    //    将多个不同功能的函数放在一起，完成特定功能，那么这一组函数就被称为模块。
+    function mod1() {
+        // mod1
+    }
+    function mod2() {
+        // mod2
+    }
+</code></pre>
+<p>通常将上面一组函数写在一个js文件上，这样就形成一个模块，在使用该模块时，在页面上加载该js文件，调用相应的函数即可。
+但是这种写法具有很明显的缺点：a 污染全局变量以及全局对象；b 体现不出模块内函数之间的关联性</p>
+<h2 id="-">对象写法</h2>
+<p>后来开发人员发现原始写法的缺点后，为解决该问题。就将实现特定功能的函数都放到一个对象上，用一个对象来定义模块。</p>
+<pre><code class="lang-javascript">    var module = {
+        _data: 1,
+        mod1: function() {},
+        mod2: function() {}
+    }
+</code></pre>
+<p>用一个对象来定义一个模块，在使用时可以通过该对象调用mod1和mod2方法即可。虽然解决了原始写法的缺点，但是也同时产新的缺点：会暴露模块内的所有成员，而且所有成员都是可读可写。外部可以随意修改。</p>
+<h2 id="-immediately-invoked-function-expression-iife">立即执行函数：Immediately-Invoked Function Expression，IIFE</h2>
+<p>使用立即执行函数（通常匿名）写法，可以避免暴露一些私有的成员。这也是JavaScript模块的基本写法。但也需要改进。</p>
+<pre><code class="lang-javascript">var module = (function() {
+    // 私有成员
+    var _data = 1;
+    return {
+        mod1: function() {},
+        mod2: function() {}
+    }
+}());
+</code></pre>
+<h2 id="augmentation-">Augmentation（增大）模式</h2>
+<p>很多时候，一个功能需要定义多个模块来实现，那么也就存在一个模块依赖另一个模块。或者一个模块要继承其他模块。</p>
+<pre><code class="lang-javascript">    // module2 模块2依赖于jQuery
+    // 同时继承与模块1
+    var module2 = (function(m, $) {
+        m.mod3 = function() {};
+        return m;
+    }(module1, jQuery));
+</code></pre>
+<p>这种写法可以在一定程度上解决，模块之前的依赖，但是却无法保证被依赖的模块会先加载。那么就有可能导致module1为undefined值。</p>
+<h2 id="-loose-augmentation-">宽松的增大模式（Loose Augmentation）</h2>
+<p>如果module1没被先加载，导致值为undefined。那么就使module1参数值空对象</p>
+<pre><code class="lang-javascript">    var module2 = (function(m, $) {
+        m.mod3 = function() {};
+        return m;
+    }(window.module1 || {}, jQuery));
+</code></pre>
+<h2 id="-">传入全局变量</h2>
+<p>为了保证模块的独立性，最好将模块内用到的全局变量，当做实参传入变量内。同时可以体现出模块之间的依赖性。</p>
+<h2 id="-">模块编写规范</h2>
+<p>因为有了模块，开发者可以更加方便的使用别人已完成的模块。大大的提高了开发效率。但是想想，如果定义模块没有统一的规范，每个人想怎么写就怎么写，那么加载别人的模块，就很有可能因为规范问题，导致无法使用他人的模块。那岂不是失去了模块的意义了吗！因此制定模块的编写规范是必要的。</p>
+<p>目前，JavaScript模块规范有三种：CommonJS、AMD（Asynchronous Module Definition）和CMD（Common Module Definition）。</p>
+<h2 id="commonjs">CommonJS</h2>
+<p>CommonJS是为了JS的表现而制定的规范，由于早期JS没有模块的功能，因此CommonJS应运而生。但是其强大的地方是，CommonJS希望JavaScript可以在任何地方执行，不仅仅是在浏览器上。</p>
+<h3 id="-">概述</h3>
+<p>目前非常流行的项目NodeJS就是CommonJS规范的一种实现。</p>
+<p>根据CommonJS规范，一个单独的文件就是一个模块，有自己的作用域。在一个文件里边定义的变量、函数、类都是私有的，对其他文件是不可见的。</p>
+<pre><code class="lang-javascript">    // mod1.js
+  var n = 1;
+  var add = function(val) {
+      return val + n;
+  };
+</code></pre>
+<p>在上面代码中，变量n 以及 函数add 是mod1.js文件私有，对其他文件是不可见的。
+如果想在多文件中共享变量，可以使用global对象</p>
+<pre><code class="lang-javascript">    global.share = &#39;this is a share data&#39;;
+</code></pre>
+<p>上面代码中，share变量就是共享的，可以被所有文件读取，但是这种做法并不推荐。</p>
+<p>CommonJS规范规定，每个模块内部，module变量表示当前模块。该变量是一个对象，其exports属性（即module.exports）是对外的接口。在加载某个模块时，本质就是加载该模块module.exports属性。</p>
+<pre><code class="lang-javascript">    var n = 1;
+    var add = function(val) {
+        return val + n;
+    };
+
+    module.exports.n = n;
+    module.exports.add = add;
+</code></pre>
+<p>上述代码，通过module.exports输出变量n 以及 函数add。</p>
+<p>require()方法用于加载指定模块。</p>
+<pre><code class="lang-javascript">    var mod = require(&#39;./mod.js&#39;);
+    console.log(mod.n); // 1
+    console.log(mod.add(1)); // 2
+</code></pre>
+<p>CommonJS模块的特点如下：</p>
+<ul>
+<li>所有代码都运行在模块的作用域下，不会污染全局作用域（全局变量以及全局对象）</li>
+<li>模块可以多次健在加载，但只会在第一次加载时运行一次，然后将运行后的结果缓存起来，以后再加载就直接读取缓存结果，想要模块再次运行，必须清楚缓存。</li>
+<li>模块加载顺序，是按照其在代码中出现的顺序。</li>
+</ul>
+<h3 id="module-">module对象</h3>
+<p>NodeJS内部提供一个Module构建函数，所有模块都是Module的实例。</p>
+<pre><code class="lang-javascript">    function Module(id, parent) {
+        this.id = id;
+        this.exports = {};
+        this.parent = parent;
+        // some thing else
+    }
+</code></pre>
+<p>每一个模块内部都有一个module对象，代表当前模块。具有以下属性:</p>
+<ul>
+<li>module.id 模块的标识符，通常是带有绝对路径的模块文件名。</li>
+<li>module.filename 模块的文件名，带有绝对路径。</li>
+<li>module.loaded 返回一个bool值，表示该模块是否已加载完成。</li>
+<li>module.parent 返回一个对象，表示调用该模块的模块。</li>
+<li>module.children 返回一个数组，表示该模块要用到的其他模块。 </li>
+<li>module.exports 表示模块对外输出的值。</li>
+</ul>
+<pre><code class="lang-javascript">    // mod2.js
+    var jQuery = require(&#39;jquery&#39;);
+    exports.$ = jQuery;
+    console.log(module);
+</code></pre>
+<p>上述代码，在命令行输入结果如下：</p>
+<pre><code class="lang-javascript">    { id: &#39;.&#39;,
+      exports: { &#39;$&#39;: [Function] },
+      parent: null,
+      filename: &#39;/example.js&#39;,
+      loaded: false,
+      children:
+        [ { id: &#39;/node_modules/jquery/dist/jquery.js&#39;,
+           exports: [Function],
+           parent: [Circular],
+           filename: &#39;/node_modules/jquery/dist/jquery.js&#39;,
+           loaded: true,
+           children: [],
+           paths: [Object] 
+        } ],
+      paths: [&#39;/node_modules&#39; ]
+    }
+</code></pre>
+<h4 id="module-exports-">module.exports属性</h4>
+<p>module.exports属性表示当前模块对外输入的接口，其他文件（模块）加载该模块，实际上就是读取module.exports变量。</p>
+<h4 id="exports-">exports变量</h4>
+<p>为了方便，NodeJS为每个模块提供一个exports变量，指向module.exports。这就等同于在每个模块头部，有一行这样的代码。</p>
+<pre><code class="lang-javascript">    var exports = module.exports;
+</code></pre>
+<p>造成的结果就是，在对外输出模块接口时，可以向exports对象添加方法。</p>
+<pre><code class="lang-javascript">    exports.area = function(r) {
+        return Math.PI * r * r;
+    };
+    exports.circumference = function(r) {
+        return 2 * Math.PI * r;
+    };
+</code></pre>
+<p>注意：不要直接给exports赋值，这样做会切断exports与module.exports之间的关联。</p>
+
+          	</article>
+        </div>
+		</div>
+  </body>
+</html>
+<script type="text/javascript" src="toc/js/jquery-1.4.4.min.js"></script>
+<script type="text/javascript" src="toc/js/jquery.ztree.all-3.5.min.js"></script>
+<script type="text/javascript" src="toc/js/ztree_toc.js"></script>
+<script type="text/javascript" src="toc_conf.js"></script>
+
+<SCRIPT type="text/javascript" >
+<!--
+$(document).ready(function(){
+    var css_conf = eval(markdown_panel_style);
+    $('#readme').css(css_conf)
+    
+    var conf = eval(jquery_ztree_toc_opts);
+		$('#tree').ztree_toc(conf);
+});
+//-->
+</SCRIPT>
